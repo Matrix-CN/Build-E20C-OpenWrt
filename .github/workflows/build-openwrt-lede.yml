@@ -167,9 +167,8 @@ jobs:
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         PACKAGE_SOC: e20c
-        KERNEL_VERSION_NAME: ${{ env.KERNEL_VERSION }}
+        KERNEL_VERSION_NAME: 5.10.y
         KERNEL_AUTO_LATEST: true
-        WHOAMI: ZZM
 
     - name: Organize files
       id: organize
@@ -189,23 +188,20 @@ jobs:
             ${{ env.FIRMWARE }}
             ${{ env.PACKAGED_OUTPUTPATH }}
 
-    - name: Create release
-      uses: ncipollo/release-action@v1
+    - name: Upload OpenWrt Firmware to Release
+      uses: softprops/action-gh-release@v2
+      if: env.PACKAGED_STATUS == 'success' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.actions_release }}
       with:
-        name: ${{ env.DATE }} ❤️ | N1-OpenWrt 自动编译打包
-        allowUpdates: true
-        tag: ${{ env.tag_name }}
-        commit: main
-        token: ${{ secrets.actions_release }}
+        tag_name: openwrt_${{ env.PACKAGED_OUTPUTDATE }}
+        files: ${{ env.PACKAGED_OUTPUTPATH }}/*
         body: |
-          编译使用版本:
-          ${{ env.useVersionInfo }}
-
-          刷机固件简介：
-            打包日期：${{ env.PACKAGED_OUTPUTDATE }}
-            内核版本：${{ env.KERNEL_VERSION }}
-            默认IP：192.168.2.1 默认用户名密码： root/password
-        artifacts: "${{ env.FIRMWARE }}/*.*,${{ env.PACKAGED_OUTPUTPATH }}/*.*"
+          首次使用建议全新刷入
+          * 固件基础信息
+          IP: 192.168.2.1
+          账户: root
+          密码: password
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.3.2
