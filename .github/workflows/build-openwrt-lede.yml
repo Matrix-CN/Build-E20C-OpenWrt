@@ -31,8 +31,6 @@ env:
   UPLOAD_FIRMWARE: false
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
-  FILE_NAME: e20c
-  PRODUCT_NAME: e20c
 
 jobs:
   build:
@@ -188,19 +186,20 @@ jobs:
             ${{ env.FIRMWARE }}
             ${{ env.PACKAGED_OUTPUTPATH }}
 
-    - name: Create release
-      id: release
-      uses: ncipollo/release-action@v1
+    - name: Upload OpenWrt Firmware to Release
+      uses: softprops/action-gh-release@v2
+      if: env.PACKAGED_STATUS == 'success' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.actions_release }}
       with:
-        name: R${{ env.DATE }} for ${{ env.PRODUCT_NAME }}
-        allowUpdates: true
-        removeArtifacts: true
-        tag: ${{ env.FILE_NAME }}
-        commit: main
-        token: ${{ secrets.actions_release }}
+        tag_name: openwrt_${{ env.PACKAGED_OUTPUTDATE }}
+        files: ${{ env.PACKAGED_OUTPUTPATH }}/*
         body: |
-          - 默认IP：192.168.2.1 默认密码：password
-        artifacts: ${{ env.FIRMWARE }}/*
+          首次使用建议全新刷入
+          * 固件基础信息
+          IP: 192.168.2.1
+          账户: root
+          密码: password
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.3.4
