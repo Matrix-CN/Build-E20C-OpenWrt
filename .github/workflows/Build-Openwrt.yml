@@ -197,6 +197,7 @@ jobs:
         body: |
           首次使用建议全新刷入
           * 固件基础信息
+          Lede
           IP: 192.168.2.1
           账户: root
           密码: password
